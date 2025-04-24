@@ -1,13 +1,29 @@
 #!/bin/bash
 # Script to set up a systemd service for pi_camera.py on the Raspberry Pi
 
-# Configuration - Modify these variables
-PI_USER="james"
-PI_HOST="192.168.1.167"
-PI_DEST_DIR="/home/james/ooda_box"
-PI_VENV_DIR="/home/james/ooda_box/venv"
-S3_BUCKET="your-s3-bucket-name"  # Change to your S3 bucket
-SERVICE_NAME="pi-camera"
+# Load configuration from YAML file using yq
+# Check if yq is installed
+if ! command -v yq &> /dev/null; then
+    echo "Error: yq is not installed. Please install it using:"
+    echo "  pip install yq"
+    exit 1
+fi
+
+# Default to Pi 4 configuration
+PI_TYPE="pi4"
+if [ "$1" == "zero" ]; then
+    PI_TYPE="zero"
+fi
+
+# Load configuration values
+PI_USER=$(yq -r .pi.$PI_TYPE.user config.yaml)
+PI_HOST=$(yq -r .pi.$PI_TYPE.host config.yaml)
+PI_DEST_DIR=$(yq -r .pi.$PI_TYPE.dest_dir config.yaml)
+PI_VENV_DIR=$(yq -r .pi.$PI_TYPE.venv_dir config.yaml)
+S3_BUCKET=$(yq -r .aws.s3_bucket config.yaml)
+SERVICE_NAME=$(yq -r .service.name config.yaml)
+
+echo "Setting up service on $PI_TYPE at $PI_HOST..."
 
 # Create the systemd service file locally
 cat > /tmp/${SERVICE_NAME}.service << EOF

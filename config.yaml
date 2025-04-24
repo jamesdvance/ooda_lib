@@ -1,0 +1,25 @@
+# OODA Box Configuration
+
+# Raspberry Pi settings
+pi:
+  # Pi Zero Configuration
+  zero:
+    user: "james"
+    host: "192.168.1.169"
+    dest_dir: "/home/james/ooda_box"
+    venv_dir: "/home/james/ooda_box/venv"
+  
+  # Pi 4 Configuration
+  pi4:
+    user: "james"
+    host: "192.168.1.167"
+    dest_dir: "/home/james/ooda_box"
+    venv_dir: "/home/james/ooda_box/venv"
+
+# AWS settings
+aws:
+  s3_bucket: "your-s3-bucket-name"
+
+# Service settings
+service:
+  name: "pi-camera"

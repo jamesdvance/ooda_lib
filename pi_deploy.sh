@@ -1,12 +1,28 @@
 #!/bin/bash
 # Script to deploy and run the pi_camera.py script on a Raspberry Pi
 
-# Configuration - Modify these variables
-PI_USER="james"
-PI_HOST="192.168.1.167"  # Change to your Pi's hostname or IP
-PI_DEST_DIR="/home/james/ooda_box"
-PI_VENV_DIR="/home/james/ooda_box/venv"
-S3_BUCKET="your-s3-bucket-name"  # Change to your S3 bucket
+# Load configuration from YAML file using yq
+# Check if yq is installed
+if ! command -v yq &> /dev/null; then
+    echo "Error: yq is not installed. Please install it using:"
+    echo "  pip install yq"
+    exit 1
+fi
+
+# Default to Pi Zero configuration
+PI_TYPE="zero"
+if [ "$1" == "pi4" ]; then
+    PI_TYPE="pi4"
+fi
+
+# Load configuration values
+PI_USER=$(yq -r .pi.$PI_TYPE.user config.yaml)
+PI_HOST=$(yq -r .pi.$PI_TYPE.host config.yaml)
+PI_DEST_DIR=$(yq -r .pi.$PI_TYPE.dest_dir config.yaml)
+PI_VENV_DIR=$(yq -r .pi.$PI_TYPE.venv_dir config.yaml)
+S3_BUCKET=$(yq -r .aws.s3_bucket config.yaml)
+
+echo "Deploying to $PI_TYPE at $PI_HOST..."
 
 # Ensure target directory exists on the Pi
 ssh ${PI_USER}@${PI_HOST} "mkdir -p ${PI_DEST_DIR}"

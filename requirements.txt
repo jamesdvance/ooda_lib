@@ -2,3 +2,4 @@ boto3==1.28.38
 moto==4.2.5
 pytest==7.4.0
 python-dotenv==1.0.0
+yq==3.2.3
