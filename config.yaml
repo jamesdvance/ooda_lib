@@ -18,7 +18,7 @@ pi:
 
 # AWS settings
 aws:
-  s3_bucket: "your-s3-bucket-name"
+  s3_bucket: "baabai-065754658554"
 
 # Service settings
 service:

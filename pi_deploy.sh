@@ -30,16 +30,14 @@ ssh ${PI_USER}@${PI_HOST} "mkdir -p ${PI_DEST_DIR}"
 # Copy the script to the Pi
 scp "$(dirname "$0")/pi_camera.py" ${PI_USER}@${PI_HOST}:${PI_DEST_DIR}/
 
-# Setup Python environment if it doesn't exist
+
+# Install to global python environment
 ssh ${PI_USER}@${PI_HOST} "
     if [ ! -d ${PI_VENV_DIR} ]; then
-        echo 'Setting up Python virtual environment...'
-        python3 -m venv ${PI_VENV_DIR}
-        source ${PI_VENV_DIR}/bin/activate
         pip install --upgrade pip
         pip install boto3
         # Note: picamera2 is typically installed system-wide on Pi OS
-        # sudo apt install -y python3-picamera2
+        sudo apt install -y python3-picamera2
     fi
 "
 
