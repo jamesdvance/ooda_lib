@@ -3,3 +3,5 @@ moto==4.2.5
 pytest==7.4.0
 python-dotenv==1.0.0
 yq==3.2.3
+blinkpy=0.23.0
+opencv-python==4.8.1.78
