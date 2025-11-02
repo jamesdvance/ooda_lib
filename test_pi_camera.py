@@ -16,7 +16,7 @@ import moto
 
 # Import the module to test
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-from pi_camera import VideoCapture
+from Desktop.git_repos.ooda_box.ooda.cameras.pi_zero_w.pi_camera import VideoCapture
 
 class TestPiCamera(unittest.TestCase):
     """Test suite for the pi_camera module"""
