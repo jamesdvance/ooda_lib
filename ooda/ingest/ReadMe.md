@@ -2,18 +2,6 @@
 
 This guide helps you decide between using RTSP (Real Time Streaming Protocol) streams and Python camera libraries like `picamera` for your video capture needs.
 
-## Quick Decision Matrix
-
-| Use Case | RTSP Streams | Python Camera Libraries |
-|----------|--------------|-------------------------|
-| **Network cameras** | ✅ Preferred | ❌ Not applicable |
-| **Local USB cameras** | ⚠️ Possible but complex | ✅ Preferred |
-| **Raspberry Pi Camera** | ⚠️ Setup required | ✅ Native support |
-| **Remote video access** | ✅ Designed for this | ❌ Additional streaming needed |
-| **Low latency control** | ❌ Network delays | ✅ Direct hardware access |
-| **Multiple camera sources** | ✅ Excellent | ⚠️ Hardware dependent |
-| **Cross-platform compatibility** | ✅ Universal | ⚠️ Platform specific |
-
 ## RTSP Streams
 
 ### When to Use RTSP
