@@ -19,7 +19,7 @@ Low cost is a top concern across all solution choices. To achieve this, we share
 ## Deploy
 * Automatically deploy the optimized and tested artifact to your Jetson
 
-![System Diagram][/assets/OODA_Lib.drawio.png]
+![System Diagram](./assets/OODA_Lib.drawio.png)
 
 
 ## Future Work
