@@ -1,0 +1,11 @@
+# AWS Configuration
+aws_region = "us-east-1"
+
+# Module Toggles - Set to true to enable each service
+enable_upload = true
+
+# Future modules (uncomment to enable):
+# enable_labeling   = false
+# enable_training   = false
+# enable_release    = false
+# enable_monitoring = false
