@@ -1,0 +1,16 @@
+# Python dependencies for OODA Upload module
+
+# AWS SDK for S3 operations
+boto3>=1.28.0
+
+# YAML configuration support
+pyyaml>=6.0
+
+# System resource monitoring (disk, network)
+psutil>=5.9.0
+
+# System dependencies (install separately):
+# - ffmpeg: Required for video compression and batching
+#   Ubuntu/Debian: sudo apt-get install ffmpeg
+#   macOS: brew install ffmpeg
+#   Fedora: sudo dnf install ffmpeg

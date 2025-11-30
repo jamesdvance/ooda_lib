@@ -1,0 +1,60 @@
+# OODA Upload Configuration Example
+# Copy this file to upload_config.yaml and customize for your setup
+
+# Video Compression Settings
+compression:
+  enabled: true
+  codec: "libx265"  # H.265 codec for better compression
+  crf: 28  # Constant Rate Factor (18-28 good quality, higher = smaller file, 23 is default)
+  preset: "medium"  # Options: ultrafast, superfast, veryfast, faster, fast, medium, slow, slower, veryslow
+  max_resolution: null  # Optional: e.g., "1920x1080" to limit resolution, null for original
+  audio_codec: "aac"
+  audio_bitrate: "128k"
+
+# Video Batching Settings
+batching:
+  enabled: true
+  window_hours: 4  # Combine videos from this time window (hours)
+  min_files: 2  # Minimum number of files to create a batch
+  max_batch_size_mb: 5000  # Maximum batch size in MB (5GB)
+
+# Upload Schedule Settings
+schedule:
+  upload_interval_hours: 6  # Upload every 6 hours (4 times per day)
+  retry_delays_minutes: [1, 5, 30, 120]  # Exponential backoff delays
+  max_retries: 4
+  check_network: true  # Check network availability before upload
+  min_bandwidth_mbps: 1.0  # Minimum required bandwidth (Mbps)
+
+# Local Storage Settings
+storage:
+  buffer_dir: "/tmp/ooda_video_buffer"  # Local buffer directory
+  max_buffer_size_gb: 20  # Maximum buffer size in GB
+  emergency_upload_threshold: 0.8  # Trigger emergency upload at 80% full
+  cleanup_after_upload: true  # Delete local files after successful upload
+  keep_originals: false  # Keep original files after compression
+
+# S3 Upload Settings
+s3:
+  bucket_name: "your-bucket-name"  # REQUIRED: Your S3 bucket name
+  region: "us-east-1"  # AWS region
+  storage_class: "INTELLIGENT_TIERING"  # Options: STANDARD, INTELLIGENT_TIERING, STANDARD_IA, ONEZONE_IA
+  multipart_threshold_mb: 100  # Use multipart upload for files larger than this
+  multipart_chunksize_mb: 10  # Size of each multipart chunk
+  use_acceleration: false  # Enable S3 Transfer Acceleration (additional cost)
+  key_prefix: "video_chunks"  # S3 key prefix for uploaded videos
+
+# Monitoring and Logging Settings
+monitoring:
+  log_level: "INFO"  # Options: DEBUG, INFO, WARNING, ERROR
+  log_file: "/var/log/ooda_upload.log"  # Log file path, null to disable
+  enable_cloudwatch: false  # Enable CloudWatch metrics (requires permissions)
+  cloudwatch_namespace: "OODA/Upload"
+  track_costs: true  # Track estimated costs
+
+# Notes:
+# - Compression reduces file size by 40-60% typically
+# - Batching reduces S3 PUT requests by ~95%
+# - 6-hour upload interval = 4 uploads/day = minimal request costs
+# - INTELLIGENT_TIERING automatically moves data to cheaper storage
+# - Total estimated cost savings: 60-75% vs real-time uploads
