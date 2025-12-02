@@ -41,7 +41,7 @@ Uploads video files from edge device into an S3 bucket.
 
 ## Organization
 
-The terraform assets are organized by capability not s 
+The terraform assets are organized by domain, to allow users to easily deploy the capabilities they need, and refrain from what they don't. Below is the folder organization:
 
 aws/
 |--upload/ 
