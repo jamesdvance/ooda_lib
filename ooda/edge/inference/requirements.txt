@@ -1,0 +1,23 @@
+# Video processing
+opencv-python==4.8.1.78
+opencv-contrib-python==4.8.1.78
+
+# License plate recognition
+fastanpr==1.1.1
+
+# Async support
+asyncio
+
+# Utilities
+numpy==1.24.3
+Pillow==10.1.0
+python-dateutil==2.8.2
+
+# Configuration
+pyyaml==6.0.1
+
+# Logging
+loguru==0.7.2
+
+# Storage and file management
+pathlib

@@ -1,0 +1,59 @@
+# OODA Inference Module Dockerfile
+# GPU-enabled container for video recording and inference
+
+# Use NVIDIA CUDA base image for GPU support
+FROM nvcr.io/nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+
+# Install Python and system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.11 \
+    python3-pip \
+    python3-dev \
+    ffmpeg \
+    libsm6 \
+    libxext6 \
+    libxrender-dev \
+    libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create symbolic link for python
+RUN ln -sf /usr/bin/python3.11 /usr/bin/python
+
+# Upgrade pip
+RUN pip install --no-cache-dir --upgrade pip
+
+# Set working directory
+WORKDIR /app
+
+# Copy requirements file
+COPY inference/requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Create non-root user for security
+RUN useradd -m -u 1000 ooda && \
+    mkdir -p /data/video_buffer /data/recordings /var/log/ooda && \
+    chown -R ooda:ooda /data /var/log/ooda
+
+# Copy inference module
+COPY --chown=ooda:ooda inference/ /app/
+
+# Switch to non-root user
+USER ooda
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1 \
+    OODA_RECORDING_DIR=/data/recordings \
+    OODA_BUFFER_DIR=/data/video_buffer \
+    OODA_LOG_FILE=/var/log/ooda/inference.log
+
+# Expose volumes for shared data with uploader
+VOLUME ["/data", "/var/log/ooda"]
+
+# Health check
+HEALTHCHECK --interval=1m --timeout=10s --start-period=30s --retries=3 \
+    CMD python -c "import sys; sys.exit(0)"
+
+# Default entrypoint - runs the inference/recording application
+ENTRYPOINT ["python", "main.py"]

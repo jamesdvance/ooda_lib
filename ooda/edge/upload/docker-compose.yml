@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+  upload:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ooda-upload:latest
+    container_name: ooda-upload
+    restart: unless-stopped
+    
+    # Environment variables for AWS and configuration
+    environment:
+      # AWS credentials (required)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+      
+      # S3 configuration
+      - OODA_S3_BUCKET=${OODA_S3_BUCKET:-your-bucket-name}
+      - OODA_S3_REGION=${OODA_S3_REGION:-us-east-1}
+      
+      # Storage configuration
+      - OODA_BUFFER_DIR=/data/video_buffer
+      - OODA_MAX_BUFFER_SIZE_GB=${OODA_MAX_BUFFER_SIZE_GB:-20}
+      
+      # Logging configuration
+      - OODA_LOG_LEVEL=${OODA_LOG_LEVEL:-INFO}
+      - OODA_LOG_FILE=/var/log/ooda/upload.log
+      
+      # Upload schedule
+      - OODA_UPLOAD_INTERVAL_HOURS=${OODA_UPLOAD_INTERVAL_HOURS:-6}
+      
+      # Compression settings
+      - OODA_COMPRESSION_ENABLED=${OODA_COMPRESSION_ENABLED:-true}
+      - OODA_COMPRESSION_CRF=${OODA_COMPRESSION_CRF:-28}
+      
+      # Batching settings
+      - OODA_BATCHING_ENABLED=${OODA_BATCHING_ENABLED:-true}
+      - OODA_BATCH_WINDOW_HOURS=${OODA_BATCH_WINDOW_HOURS:-4}
+    
+    # Persistent volumes
+    volumes:
+      # Data directory for video buffer and SQLite database
+      - upload-data:/data
+      
+      # Logs directory
+      - upload-logs:/var/log/ooda
+      
+      # Optional: Mount custom configuration file
+      # - ./upload_config.yaml:/app/upload_config.yaml:ro
+      
+      # Optional: Mount video source directory (if videos are added from host)
+      # - /path/to/videos:/videos:ro
+    
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from upload import Upload; u = Upload(); u.get_status()"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  upload-data:
+    driver: local
+  upload-logs:
+    driver: local

@@ -1,0 +1,60 @@
+# OODA Upload Module Dockerfile
+# Multi-stage build for smaller final image
+
+FROM python:3.11-slim as builder
+
+# Install build dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create virtual environment
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Copy and install Python dependencies
+COPY upload/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+# Final stage
+FROM python:3.11-slim
+
+# Install runtime dependencies (ffmpeg is required for video processing)
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy virtual environment from builder
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+# Create non-root user for security
+RUN useradd -m -u 1000 ooda && \
+    mkdir -p /data/video_buffer /var/log/ooda && \
+    chown -R ooda:ooda /data /var/log/ooda
+
+# Set working directory
+WORKDIR /app
+
+# Copy upload module
+COPY --chown=ooda:ooda upload/ /app/
+
+# Switch to non-root user
+USER ooda
+
+# Environment variables (can be overridden at runtime)
+ENV PYTHONUNBUFFERED=1 \
+    OODA_BUFFER_DIR=/data/video_buffer \
+    OODA_LOG_FILE=/var/log/ooda/upload.log
+
+# Expose volumes for persistent data
+VOLUME ["/data", "/var/log/ooda"]
+
+# Health check
+HEALTHCHECK --interval=5m --timeout=10s --start-period=30s --retries=3 \
+    CMD python -c "from upload import Upload; u = Upload(); status = u.get_status(); exit(0 if status else 1)"
+
+# Default entrypoint - runs the upload daemon
+ENTRYPOINT ["python", "-m", "upload"]
+CMD ["daemon"]

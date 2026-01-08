@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation
+README.md
+*.md
+
+# Test files
+test_*.py
+*_test.py
+tests/
+
+# Local data
+*.db
+*.sqlite
+*.sqlite3
+/data/
+/logs/
+
+# Configuration (should be mounted as volume)
+upload_config.yaml
+
+# Example files
+example_*.py

@@ -13,13 +13,6 @@ Cost-effective video upload system for S3 designed for edge devices and homebrew
 - **Cost Tracking**: Real-time cost estimation for AWS S3 usage
 - **Storage Management**: Automatic cleanup and emergency upload triggers
 
-## Cost Savings
-
-Compared to naive real-time uploads:
-- **Storage**: ~40-60% reduction (compression + Intelligent-Tiering)
-- **Transfer**: ~40-60% reduction (compression)
-- **Requests**: ~95% reduction (batching)
-- **Total**: ~60-75% cost reduction
 
 ## Installation
 

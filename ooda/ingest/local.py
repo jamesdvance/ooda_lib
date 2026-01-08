@@ -1,1 +1,0 @@
-# Holds functions to ingest from picamera, usb, or other local cameras

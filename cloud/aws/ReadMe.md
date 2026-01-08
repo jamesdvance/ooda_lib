@@ -12,7 +12,7 @@ First, install [terraform CLI](https://developer.hashicorp.com/terraform/cli/com
 
 ## Design
 
-![System Diagram](./assets/OODA_Lib.drawio.png)
+![System Diagram](../../assets/OODA_Lib.drawio.png)
 
 ## Services & Assets
 
@@ -43,6 +43,7 @@ Uploads video files from edge device into an S3 bucket.
 
 The terraform assets are organized by domain, to allow users to easily deploy the capabilities they need, and refrain from what they don't. Below is the folder organization:
 
+```
 aws/
 |--upload/ 
     |--s3.tf
@@ -77,3 +78,4 @@ aws/
     |--grafana.tf
         |--ooda_managed_grafana
      
+```

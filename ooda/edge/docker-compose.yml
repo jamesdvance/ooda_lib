@@ -1,0 +1,133 @@
+version: '3.8'
+
+services:
+  # GPU-enabled inference service (recorder)
+  inference:
+    build:
+      context: .
+      dockerfile: Dockerfile.inference
+    image: ooda-inference:latest
+    container_name: ooda-inference
+    restart: unless-stopped
+
+    # GPU access for inference
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+        limits:
+          cpus: '4.0'
+          memory: 4G
+        reservations:
+          cpus: '2.0'
+          memory: 2G
+
+    # Environment variables
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+      - OODA_RECORDING_DIR=/data/recordings
+      - OODA_BUFFER_DIR=/data/video_buffer
+      - OODA_LOG_FILE=/var/log/ooda/inference.log
+      - OODA_LOG_LEVEL=${OODA_LOG_LEVEL:-INFO}
+
+    # Shared volumes with uploader sidecar
+    volumes:
+      # Shared data directory for video buffer
+      - shared-data:/data
+
+      # Shared logs directory
+      - shared-logs:/var/log/ooda
+
+      # Optional: Device access for cameras/video sources
+      # - /dev/video0:/dev/video0
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Lightweight upload sidecar service
+  uploader:
+    build:
+      context: .
+      dockerfile: Dockerfile.uploader
+    image: ooda-uploader:latest
+    container_name: ooda-uploader
+    restart: unless-stopped
+
+    # Depends on inference service
+    depends_on:
+      - inference
+
+    # Environment variables for AWS and configuration
+    environment:
+      # AWS credentials (required)
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
+
+      # S3 configuration
+      - OODA_S3_BUCKET=${OODA_S3_BUCKET:-your-bucket-name}
+      - OODA_S3_REGION=${OODA_S3_REGION:-us-east-1}
+
+      # Storage configuration
+      - OODA_BUFFER_DIR=/data/video_buffer
+      - OODA_MAX_BUFFER_SIZE_GB=${OODA_MAX_BUFFER_SIZE_GB:-20}
+
+      # Logging configuration
+      - OODA_LOG_LEVEL=${OODA_LOG_LEVEL:-INFO}
+      - OODA_LOG_FILE=/var/log/ooda/upload.log
+
+      # Upload schedule
+      - OODA_UPLOAD_INTERVAL_HOURS=${OODA_UPLOAD_INTERVAL_HOURS:-6}
+
+      # Compression settings
+      - OODA_COMPRESSION_ENABLED=${OODA_COMPRESSION_ENABLED:-true}
+      - OODA_COMPRESSION_CRF=${OODA_COMPRESSION_CRF:-28}
+
+      # Batching settings
+      - OODA_BATCHING_ENABLED=${OODA_BATCHING_ENABLED:-true}
+      - OODA_BATCH_WINDOW_HOURS=${OODA_BATCH_WINDOW_HOURS:-4}
+
+    # Shared volumes with inference service
+    volumes:
+      # Shared data directory for video buffer
+      - shared-data:/data
+
+      # Shared logs directory
+      - shared-logs:/var/log/ooda
+
+      # Optional: Mount custom configuration file
+      # - ./upload/upload_config.yaml:/app/upload_config.yaml:ro
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
+    # Health check
+    healthcheck:
+      test: ["CMD", "python", "-c", "from upload import Upload; u = Upload(); u.get_status()"]
+      interval: 5m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+# Shared volumes between services (sidecar pattern)
+volumes:
+  shared-data:
+    driver: local
+  shared-logs:
+    driver: local

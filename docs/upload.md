@@ -13,11 +13,6 @@ The OODA Upload module provides intelligent, cost-optimized video upload to S3 s
 - **Emergency Mode**: Automatic upload when local storage fills
 
 **Architecture:**
-```
-Video Capture � Buffer � Compress � Batch � Scheduled Upload � S3
-                  �         �         �            �
-              SQLite    ffmpeg    Combine    Multipart/Standard
-```
 
 ## Quick Start
 
