@@ -2,68 +2,68 @@ version: '3.8'
 
 services:
   # GPU-enabled inference service (recorder)
-  inference:
-    build:
-      context: .
-      dockerfile: Dockerfile.inference
-    image: ooda-inference:latest
-    container_name: ooda-inference
-    restart: unless-stopped
+  # inference:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.inference
+  #   image: ooda-inference:latest
+  #   container_name: ooda-inference
+  #   restart: unless-stopped
 
-    # GPU access for inference
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
-          cpus: '2.0'
-          memory: 2G
-        limits:
-          cpus: '4.0'
-          memory: 4G
+  #   # GPU access for inference
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: 1
+  #             capabilities: [gpu]
+  #         cpus: '2.0'
+  #         memory: 2G
+  #       limits:
+  #         cpus: '4.0'
+  #         memory: 4G
 
-    # Environment variables
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=all
-      - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
-      - OODA_RECORDING_DIR=/data/recordings
-      - OODA_BUFFER_DIR=/data/video_buffer
-      - OODA_LOG_FILE=/var/log/ooda/inference.log
-      - OODA_LOG_LEVEL=${OODA_LOG_LEVEL:-INFO}
+  #   # Environment variables
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=all
+  #     - NVIDIA_DRIVER_CAPABILITIES=compute,utility,video
+  #     - OODA_RECORDING_DIR=/data/recordings
+  #     - OODA_BUFFER_DIR=/data/video_buffer
+  #     - OODA_LOG_FILE=/var/log/ooda/inference.log
+  #     - OODA_LOG_LEVEL=${OODA_LOG_LEVEL:-INFO}
 
-    # Shared volumes with uploader sidecar
-    volumes:
-      # Shared data directory for video buffer
-      - shared-data:/data
+  #   # Shared volumes with uploader sidecar
+  #   volumes:
+  #     # Shared data directory for video buffer
+  #     - shared-data:/data
 
-      # Shared logs directory
-      - shared-logs:/var/log/ooda
+  #     # Shared logs directory
+  #     - shared-logs:/var/log/ooda
 
-      # Optional: Device access for cameras/video sources
-      # - /dev/video0:/dev/video0
+  #     # Optional: Device access for cameras/video sources
+  #     # - /dev/video0:/dev/video0
 
-    # Health check
-    healthcheck:
-      test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
-      interval: 1m
-      timeout: 10s
-      retries: 3
-      start_period: 30s
+  #   # Health check
+  #   healthcheck:
+  #     test: ["CMD", "python", "-c", "import sys; sys.exit(0)"]
+  #     interval: 1m
+  #     timeout: 10s
+  #     retries: 3
+  #     start_period: 30s
 
-  # Lightweight upload sidecar service
-  uploader:
-    build:
-      context: .
-      dockerfile: Dockerfile.uploader
-    image: ooda-uploader:latest
-    container_name: ooda-uploader
-    restart: unless-stopped
+  # # Lightweight upload sidecar service
+  # uploader:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile.uploader
+  #   image: ooda-uploader:latest
+  #   container_name: ooda-uploader
+  #   restart: unless-stopped
 
-    # Depends on inference service
-    depends_on:
-      - inference
+  #   # Depends on inference service
+  #   depends_on:
+  #     - inference
 
     # Environment variables for AWS and configuration
     environment:
