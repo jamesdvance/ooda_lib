@@ -18,12 +18,11 @@ services:
             - driver: nvidia
               count: 1
               capabilities: [gpu]
+          cpus: '2.0'
+          memory: 2G
         limits:
           cpus: '4.0'
           memory: 4G
-        reservations:
-          cpus: '2.0'
-          memory: 2G
 
     # Environment variables
     environment:
