@@ -1,0 +1,89 @@
+# Jetson Nano Security Camera Configuration
+# Edit these values for your setup
+
+# =============================================================================
+# CAMERA SETTINGS
+# =============================================================================
+
+# Camera device ID (usually 0 for built-in/first camera)
+camera_id: 0
+
+# Resolution - lower for better performance, higher for better recognition
+# Recommended: 1920x1080 for license plates, 1280x720 for general monitoring
+width: 1920
+height: 1080
+
+# Frame rate - 30 is good for smooth video, 15 saves space
+fps: 30
+
+# =============================================================================
+# RECORDING SETTINGS
+# =============================================================================
+
+# Where to save recordings locally
+output_dir: "/home/jetson/recordings"
+
+# How long each video segment should be (in seconds)
+# Shorter = more files but easier to manage; Longer = fewer files
+segment_duration_seconds: 300  # 5 minutes
+
+# Video codec (h264 is hardware accelerated on Jetson)
+video_codec: "h264"
+video_format: "mp4"
+
+# =============================================================================
+# MOTION DETECTION
+# =============================================================================
+
+# Enable motion-triggered recording (highly recommended to save space)
+motion_detection_enabled: true
+
+# Sensitivity - lower = more sensitive, higher = less sensitive
+motion_threshold: 25
+
+# Minimum size of motion to trigger (in pixels)
+# Increase to ignore small movements like leaves/shadows
+motion_min_area: 5000
+
+# Seconds to keep BEFORE motion is detected (pre-roll buffer)
+pre_motion_buffer_seconds: 5
+
+# Seconds to keep recording AFTER motion stops
+post_motion_seconds: 10
+
+# =============================================================================
+# AWS S3 SYNC
+# =============================================================================
+
+# Enable automatic S3 upload
+s3_enabled: true
+
+# Your S3 bucket name (CHANGE THIS!)
+s3_bucket: "your-security-cam-bucket-UNIQUE-ID"
+
+# Folder structure in S3
+s3_prefix: "raw-footage"
+
+# How often to sync (in seconds)
+s3_sync_interval_seconds: 300
+
+# Delete local files after successful upload (recommended to save space)
+delete_after_sync: true
+
+# =============================================================================
+# DISK MANAGEMENT
+# =============================================================================
+
+# Maximum local storage to use (in GB)
+max_local_storage_gb: 20.0
+
+# Minimum free space to maintain (in GB) - triggers cleanup
+min_free_space_gb: 2.0
+
+# =============================================================================
+# METADATA
+# =============================================================================
+
+# Camera identification (used in filenames and metadata)
+camera_location: "front_yard"  # e.g., front_yard, driveway, backyard
+camera_name: "cam_01"          # Unique identifier for this camera
