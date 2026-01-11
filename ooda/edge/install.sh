@@ -47,7 +47,7 @@ check_jetson() {
     print_header "Checking Jetson Platform"
 
     if [ -f /etc/nv_tegra_release ]; then
-        TEGRA_RELEASE=$(cat /etc/nv_tegra_release)
+        TEGRA_RELEASE=$(cat /etc/nv_tegra_release)f
         print_status "Jetson platform detected"
         echo "  $TEGRA_RELEASE"
     else
@@ -117,12 +117,12 @@ check_docker_compose() {
     COMPOSE_CMD=""
     COMPOSE_VERSION=""
 
-    if command -v docker-compose &> /dev/null; then
-        COMPOSE_CMD="docker-compose"
-        COMPOSE_VERSION=$(docker-compose --version | grep -oP '\d+\.\d+' | head -1)
-    elif docker compose version &> /dev/null 2>&1; then
+    if docker compose version &> /dev/null 2>&1; then
         COMPOSE_CMD="docker compose"
         COMPOSE_VERSION=$(docker compose version | grep -oP '\d+\.\d+' | head -1)
+    elif command -v docker-compose &> /dev/null; then
+        COMPOSE_CMD="docker-compose"
+        COMPOSE_VERSION=$(docker-compose --version | grep -oP '\d+\.\d+' | head -1)
     fi
 
     if [ -z "$COMPOSE_CMD" ]; then
