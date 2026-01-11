@@ -29,16 +29,18 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Create non-root user for security
-RUN useradd -m -u 1000 ooda && \
+# Create non-root user for security with specific UID/GID for volume permissions
+RUN groupadd -g 1000 ooda && \
+    useradd -m -u 1000 -g 1000 ooda && \
     mkdir -p /data/video_buffer /var/log/ooda && \
-    chown -R ooda:ooda /data /var/log/ooda
+    chown -R 1000:1000 /data /var/log/ooda && \
+    chmod 775 /var/log/ooda
 
 # Set working directory
 WORKDIR /app
 
 # Copy upload module as a package (so 'python -m upload' works)
-COPY --chown=ooda:ooda . /app/upload/
+COPY --chown=1000:1000 . /app/upload/
 
 # Switch to non-root user
 USER ooda
