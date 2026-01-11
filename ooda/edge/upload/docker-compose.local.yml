@@ -1,0 +1,55 @@
+version: '3.8'
+
+# Local development/testing compose file
+# Usage: docker-compose -f docker-compose.local.yml up --build
+
+services:
+  upload:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ooda-upload:local
+    container_name: ooda-upload-local
+
+    # Use .env file for configuration
+    env_file:
+      - .env
+
+    environment:
+      - OODA_BUFFER_DIR=/data/video_buffer
+      - OODA_LOG_LEVEL=DEBUG
+      - OODA_LOG_FILE=/var/log/ooda/upload.log
+
+    volumes:
+      # Persistent data for testing
+      - ./test_data:/data
+      - ./test_logs:/var/log/ooda
+      # Mount test videos if you have any
+      # - ./test_videos:/videos:ro
+
+    # Override command for testing - just check imports work
+    command: ["python", "-c", "from upload import Upload, UploadConfig; print('Imports OK'); c = UploadConfig(); print(f'Config loaded: buffer_dir={c.storage.buffer_dir}')"]
+
+  # Test that daemon mode starts (use this to test full startup)
+  upload-daemon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ooda-upload:local
+    container_name: ooda-upload-daemon-test
+    profiles:
+      - daemon  # Only runs with: docker-compose --profile daemon up
+
+    env_file:
+      - .env
+
+    environment:
+      - OODA_BUFFER_DIR=/data/video_buffer
+      - OODA_LOG_LEVEL=DEBUG
+
+    volumes:
+      - ./test_data:/data
+      - ./test_logs:/var/log/ooda
+
+    # Default daemon command
+    command: ["python", "-m", "upload", "daemon"]

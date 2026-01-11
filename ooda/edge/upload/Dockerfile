@@ -37,8 +37,8 @@ RUN useradd -m -u 1000 ooda && \
 # Set working directory
 WORKDIR /app
 
-# Copy upload module
-COPY --chown=ooda:ooda . /app/
+# Copy upload module as a package (so 'python -m upload' works)
+COPY --chown=ooda:ooda . /app/upload/
 
 # Switch to non-root user
 USER ooda
