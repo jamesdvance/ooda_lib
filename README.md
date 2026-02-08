@@ -35,6 +35,45 @@ Maybe you don't want the cost of a step to emulate the model before releasing it
 ### Simplicity
 It's not just lip service. We want the fewest keystrokes possible in order to deploy and test our camera system.
 
+## Getting Started
+
+### 1. Deploy Cloud Infrastructure
+
+From the `cloud/aws` directory:
+
+```bash
+terraform init
+terraform apply
+```
+
+This provisions S3 buckets, KMS keys, IAM roles, and IoT resources. After apply, Terraform generates edge device configuration files automatically:
+
+- `ooda/edge/upload/.env.generated` — S3 bucket name, region, IoT endpoint, and upload settings
+- `ooda/edge/certs/iot_certificate.pem` — IoT device certificate
+- `ooda/edge/certs/iot_private_key.pem` — IoT device private key
+
+### 2. Configure the Edge Device
+
+On the edge device (or before copying files over), run the configure script with your AWS credentials:
+
+```bash
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-key
+cd ooda/edge
+./configure.sh
+```
+
+This copies the Terraform-generated config into `upload/.env` and injects your AWS credentials.
+
+### 3. Copy to Edge Device
+
+Copy the `ooda/edge` directory to your Jetson Nano, then run:
+
+```bash
+./install.sh
+./run.sh
+```
+
 ## Future Work
 * AgentOps workflows for actions taken on video
 * Auto-labeling for self-supervised learning

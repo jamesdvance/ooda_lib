@@ -10,7 +10,6 @@ from typing import List, Dict, Optional, Any
 from dataclasses import dataclass, asdict
 from loguru import logger
 
-from fastanpr import FastANPR
 from config import InferenceConfig, StorageConfig
 
 
@@ -46,13 +45,18 @@ class InferenceProcessor:
     async def initialize(self) -> bool:
         """Initialize the FastANPR model."""
         if not self.config.enabled:
-            logger.info("Inference is disabled")
+            logger.info("Inference is disabled — recording only mode")
             return True
 
         try:
             logger.info("Initializing FastANPR model...")
+            from fastanpr import FastANPR
             self.model = FastANPR()
             logger.info("FastANPR model initialized successfully")
+            return True
+        except ImportError:
+            logger.warning("FastANPR not installed — falling back to recording only mode")
+            self.config.enabled = False
             return True
         except Exception as e:
             logger.error(f"Failed to initialize FastANPR model: {e}")

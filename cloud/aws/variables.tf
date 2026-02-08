@@ -10,13 +10,20 @@ variable "enable_upload" {
   default     = true
 }
 
+# Enable IoT Core provisioning for edge devices
+variable "enable_iot" {
+  description = "Enable AWS IoT Core provisioning for edge devices"
+  type        = bool
+  default     = true
+}
+
+variable "enable_labeling" {
+  description = "Enable the labeling service (S3 bucket, EC2 instance, and IAM role)"
+  type        = bool
+  default     = false
+}
+
 # Future module toggles:
-# variable "enable_labeling" {
-#   description = "Enable the labeling service (S3 bucket, EC2 instance, and IAM role)"
-#   type        = bool
-#   default     = false
-# }
-#
 # variable "enable_training" {
 #   description = "Enable the training service (EKS cluster and EFS volume)"
 #   type        = bool

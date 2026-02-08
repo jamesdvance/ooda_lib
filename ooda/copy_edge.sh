@@ -1,0 +1,1 @@
+scp -r ooda/edge <user>@<ip>:ooda

@@ -1,26 +1,19 @@
 # OODA Inference Module Dockerfile
-# GPU-enabled container for video recording and inference
+# Lightweight container for video recording on Jetson Nano (ARM64)
+# For GPU-accelerated inference, switch base to nvcr.io/nvidia/l4t-ml:r35.2.1-py3
 
-# Use NVIDIA CUDA base image for GPU support
-FROM nvcr.io/nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+FROM python:3.11-slim
 
-# Install Python and system dependencies
+# Install system dependencies for OpenCV video capture and encoding
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3.11 \
-    python3-pip \
-    python3-dev \
     ffmpeg \
     libsm6 \
     libxext6 \
     libxrender-dev \
-    libgomp1 \
+    libv4l-dev \
+    v4l-utils \
+    libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
-
-# Create symbolic link for python
-RUN ln -sf /usr/bin/python3.11 /usr/bin/python
-
-# Upgrade pip
-RUN pip install --no-cache-dir --upgrade pip
 
 # Set working directory
 WORKDIR /app

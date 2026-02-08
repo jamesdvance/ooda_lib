@@ -1,2 +1,13 @@
 /venv
 *.terraform
+
+# AWS credentials
+.aws/credentials
+
+# Edge sensitive files
+ooda/edge/upload/.env
+ooda/edge/upload/.env.generated
+ooda/edge/certs/
+
+# Claude settings
+.claude/

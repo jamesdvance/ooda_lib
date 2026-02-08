@@ -63,7 +63,7 @@ class S3Config:
 class MonitoringConfig:
     """Monitoring and logging configuration"""
     log_level: str = "INFO"
-    log_file: Optional[str] = "/var/log/ooda_upload.log"
+    log_file: Optional[str] = "/var/log/ooda/upload.log"
     enable_cloudwatch: bool = False
     cloudwatch_namespace: str = "OODA/Upload"
     track_costs: bool = True
@@ -133,6 +133,12 @@ class UploadConfig:
             config.compression.enabled = os.getenv('OODA_COMPRESSION_ENABLED').lower() == 'true'
         if os.getenv('OODA_COMPRESSION_CRF'):
             config.compression.crf = int(os.getenv('OODA_COMPRESSION_CRF'))
+
+        # Monitoring configuration from environment
+        if os.getenv('OODA_LOG_LEVEL'):
+            config.monitoring.log_level = os.getenv('OODA_LOG_LEVEL')
+        if os.getenv('OODA_LOG_FILE'):
+            config.monitoring.log_file = os.getenv('OODA_LOG_FILE')
 
         return config
 

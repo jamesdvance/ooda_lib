@@ -24,11 +24,35 @@ Uploads video files from edge device into an S3 bucket.
 * Iam Role - allows write access to s3 from edge device
 
 ### Labeling Service
+Provides a low-cost EC2 instance running [Voxel51 FiftyOne](https://docs.voxel51.com/) for dataset exploration and annotation. The instance auto-stops after 30 minutes of idle CPU to minimize costs (~$0.04/hr when running).
+
+#### Enable
+Set `enable_labeling = true` in your Terraform variables and run `terraform apply`.
+
+#### Usage
+1. SSH into the instance:
+   ```bash
+   ssh ec2-user@$(terraform output -raw labeling_public_ip)
+   ```
+2. Start FiftyOne (syncs raw video from the upload bucket and launches the UI):
+   ```bash
+   ./labeling/start_fiftyone.sh
+   ```
+3. Open the FiftyOne UI in your browser at `http://<public_ip>:5151`
+4. When done labeling, export labels to S3:
+   ```bash
+   ./labeling/export_labels.sh
+   ```
+5. The instance will auto-stop after 30 minutes of inactivity. To start it again:
+   ```bash
+   aws ec2 start-instances --instance-ids $(terraform output -raw labeling_instance_id)
+   ```
 
 #### Assets
-* S3 bucket - holds labeled training data
-* Ec2 instance - runs labeling software
-* Iam role - labeling role
+* S3 bucket (`ooda-processed-video-<acct_id>`) - holds labeled training data
+* EC2 instance (t3.medium) - runs FiftyOne labeling software
+* IAM role - read access to upload bucket, read/write to labeling bucket
+* CloudWatch alarm - auto-stops instance when idle
 
 ### Training Service
 * EKS Cluster - training and experimentation notebooks

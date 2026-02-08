@@ -190,73 +190,92 @@ check_disk_space() {
 setup_environment() {
     print_header "Setting Up Environment"
 
-    ENV_FILE="$SCRIPT_DIR/.env"
-    ENV_EXAMPLE="$SCRIPT_DIR/.env.example"
+    UPLOAD_ENV="$SCRIPT_DIR/upload/.env"
+    GENERATED_ENV="$SCRIPT_DIR/upload/.env.generated"
 
-    # Create .env.example if it doesn't exist
-    if [ ! -f "$ENV_EXAMPLE" ]; then
-        cat > "$ENV_EXAMPLE" << 'EOF'
-# AWS Credentials (required for upload)
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_DEFAULT_REGION=us-east-1
-
-# S3 Configuration
-OODA_S3_BUCKET=your-bucket-name
-OODA_S3_REGION=us-east-1
-
-# Storage Configuration
-OODA_MAX_BUFFER_SIZE_GB=20
-
-# Logging
-OODA_LOG_LEVEL=INFO
-
-# Upload Schedule (hours)
-OODA_UPLOAD_INTERVAL_HOURS=6
-
-# Compression
-OODA_COMPRESSION_ENABLED=true
-OODA_COMPRESSION_CRF=28
-
-# Batching
-OODA_BATCHING_ENABLED=true
-OODA_BATCH_WINDOW_HOURS=4
-EOF
-        print_status "Created .env.example template"
+    # Install the Terraform-generated .env if available
+    if [ -f "$GENERATED_ENV" ]; then
+        cp "$GENERATED_ENV" "$UPLOAD_ENV"
+        print_status "Copied .env.generated to upload/.env"
+    elif [ -f "$UPLOAD_ENV" ]; then
+        print_status "upload/.env already exists"
+    else
+        print_error "No upload/.env or .env.generated found"
+        echo "  Run 'terraform apply' in cloud/aws first, then re-copy the edge directory"
+        exit 1
     fi
 
-    if [ ! -f "$ENV_FILE" ]; then
-        print_warning ".env file not found"
-        echo "  Copy and configure the environment file:"
-        echo "  cp $ENV_EXAMPLE $ENV_FILE"
-        echo "  nano $ENV_FILE"
+    # Inject AWS credentials from environment, then ~/.aws/credentials, then skip
+    if [ -n "$AWS_ACCESS_KEY_ID" ] && [ -n "$AWS_SECRET_ACCESS_KEY" ]; then
+        sed -i '/^AWS_ACCESS_KEY_ID=/d; /^AWS_SECRET_ACCESS_KEY=/d' "$UPLOAD_ENV"
+        echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> "$UPLOAD_ENV"
+        echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> "$UPLOAD_ENV"
+        print_status "Injected AWS credentials from environment"
+    elif [ -f "$HOME/.aws/credentials" ]; then
+        AWS_KEY=$(awk -F= '/aws_access_key_id/{print $2}' "$HOME/.aws/credentials" | tr -d ' ' | head -1)
+        AWS_SECRET=$(awk -F= '/aws_secret_access_key/{print $2}' "$HOME/.aws/credentials" | tr -d ' ' | head -1)
+        if [ -n "$AWS_KEY" ] && [ -n "$AWS_SECRET" ]; then
+            sed -i '/^AWS_ACCESS_KEY_ID=/d; /^AWS_SECRET_ACCESS_KEY=/d' "$UPLOAD_ENV"
+            echo "AWS_ACCESS_KEY_ID=$AWS_KEY" >> "$UPLOAD_ENV"
+            echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET" >> "$UPLOAD_ENV"
+            print_status "Injected AWS credentials from ~/.aws/credentials"
+        fi
     else
-        print_status ".env file exists"
+        if grep -q 'AWS_ACCESS_KEY_ID=.' "$UPLOAD_ENV" 2>/dev/null; then
+            print_status "AWS credentials already in upload/.env"
+        else
+            print_warning "AWS credentials not found"
+            echo "  Run 'aws configure' or export AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY"
+        fi
     fi
 }
 
-print_summary() {
-    print_header "Installation Summary"
+setup_iot_certs() {
+    print_header "Installing IoT Certificates"
 
-    echo "All prerequisites are met!"
-    echo ""
+    CERTS_SRC="$SCRIPT_DIR/certs"
+    CERTS_DEST="/etc/ooda/iot"
+
+    if [ ! -d "$CERTS_SRC" ]; then
+        print_warning "No certs/ directory found, skipping IoT setup"
+        return
+    fi
+
+    if [ ! -f "$CERTS_SRC/iot_certificate.pem" ] || [ ! -f "$CERTS_SRC/iot_private_key.pem" ]; then
+        print_warning "IoT certificate files not found in certs/, skipping"
+        return
+    fi
+
+    sudo mkdir -p "$CERTS_DEST"
+    sudo cp "$CERTS_SRC/iot_certificate.pem" "$CERTS_DEST/cert.pem"
+    sudo cp "$CERTS_SRC/iot_private_key.pem" "$CERTS_DEST/key.pem"
+    print_status "Installed IoT certificate and private key to $CERTS_DEST"
+
+    # Download Amazon Root CA if not already present
+    if [ ! -f "$CERTS_DEST/root-ca.pem" ]; then
+        sudo curl -s https://www.amazontrust.com/repository/AmazonRootCA1.pem -o "$CERTS_DEST/root-ca.pem"
+        print_status "Downloaded Amazon Root CA"
+    else
+        print_status "Amazon Root CA already present"
+    fi
+
+    sudo chown -R root:root "$CERTS_DEST"
+    sudo chmod 600 "$CERTS_DEST"/*
+    print_status "Set certificate file permissions"
+}
+
+print_summary() {
+    print_header "Installation Complete"
+
     echo "Next steps:"
     echo ""
-    echo "  1. Configure environment variables:"
-    echo "     cp .env.example .env"
-    echo "     nano .env"
+    echo "  1. Build and start services:"
+    echo "     ./run.sh build"
+    echo "     ./run.sh up"
     echo ""
-    echo "  2. (Optional) Configure upload settings:"
-    echo "     cp upload/upload_config.example.yaml upload/upload_config.yaml"
-    echo "     nano upload/upload_config.yaml"
-    echo ""
-    echo "  3. Build and start services:"
-    echo "     docker-compose build"
-    echo "     docker-compose up -d"
-    echo ""
-    echo "  4. Check service status:"
-    echo "     docker-compose ps"
-    echo "     docker-compose logs -f"
+    echo "  2. Check service status:"
+    echo "     ./run.sh status"
+    echo "     ./run.sh logs"
     echo ""
 }
 
@@ -272,6 +291,7 @@ main() {
     check_nvidia_runtime
     check_disk_space
     setup_environment
+    setup_iot_certs
     print_summary
 }
 

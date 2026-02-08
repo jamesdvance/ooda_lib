@@ -1,9 +1,5 @@
-# Video processing
-opencv-python==4.8.1.78
-opencv-contrib-python==4.8.1.78
-
-# License plate recognition
-fastanpr==1.1.1
+# Video processing (headless — no GUI needed in container)
+opencv-python-headless==4.8.1.78
 
 # Async support
 asyncio
@@ -19,5 +15,5 @@ pyyaml==6.0.1
 # Logging
 loguru==0.7.2
 
-# Storage and file management
-pathlib
+# License plate recognition (install manually for GPU inference mode)
+# fastanpr==0.1.13
