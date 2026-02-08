@@ -1,5 +1,13 @@
 /venv
+__pycache__/
+*.pyc
+
+# Terraform
 *.terraform
+*.tfstate
+*.tfstate.backup
+*.tfstate.*.backup
+.terraform.lock.hcl
 
 # AWS credentials
 .aws/credentials
@@ -8,6 +16,11 @@
 ooda/edge/upload/.env
 ooda/edge/upload/.env.generated
 ooda/edge/certs/
+
+# Environment files (catch-all for any .env with secrets)
+.env
+.env.local
+.env.production
 
 # Claude settings
 .claude/
