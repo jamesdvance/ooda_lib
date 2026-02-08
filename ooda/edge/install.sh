@@ -126,19 +126,18 @@ check_docker_compose() {
     fi
 
     if [ -z "$COMPOSE_CMD" ]; then
-        print_error "Docker Compose is not installed"
-        echo ""
-        echo "Please install Docker Compose. For Jetson Nano, run:"
-        echo ""
-        echo "  # Install via pip (recommended for Jetson)"
-        echo "  sudo apt-get update"
-        echo "  sudo apt-get install -y python3-pip libffi-dev"
-        echo "  sudo pip3 install docker-compose"
-        echo ""
-        echo "  # Verify installation"
-        echo "  docker-compose --version"
-        echo ""
-        exit 1
+        print_warning "Docker Compose is not installed. Installing docker-compose v2.24.0..."
+        sudo curl -L https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-linux-aarch64 -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
+
+        if command -v docker-compose &> /dev/null; then
+            COMPOSE_CMD="docker-compose"
+            COMPOSE_VERSION=$(docker-compose --version | grep -oP '\d+\.\d+' | head -1)
+            print_status "docker-compose v2.24.0 installed successfully"
+        else
+            print_error "Failed to install docker-compose"
+            exit 1
+        fi
     fi
 
     if version_gte "$COMPOSE_VERSION" "$MIN_COMPOSE_VERSION"; then

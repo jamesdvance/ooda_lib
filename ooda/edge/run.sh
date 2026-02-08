@@ -10,9 +10,9 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$SCRIPT_DIR"
 
 # Detect compose command (v1 or v2)
-if command -v docker compose &> /dev/null; then
+if docker compose version &> /dev/null; then
     COMPOSE_CMD="docker compose"
-elif docker compose-version &> /dev/null 2>&1; then
+elif command -v docker-compose &> /dev/null; then
     COMPOSE_CMD="docker-compose"
 else
     echo "Error: Docker Compose is not installed"
